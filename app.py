@@ -63,7 +63,22 @@ def view(date):
     food_cur = db.execute("SELECT id, name FROM food")
     food_results = food_cur.fetchall()
 
-    return render_template('day.html', date=pretty_date, food_results=food_results)
+    log_cur = db.execute("""
+                         SELECT food.name, food.protein, food.carbohydrates, food.fat, food.calories
+                         FROM log_date 
+                         JOIN food_date 
+                         ON food_date.log_date_id = log_date.id
+                         JOIN food
+                         ON food.id = food_date.food_id
+                         WHERE log_date.entry_date = ?""", 
+                         [date])
+    log_results = log_cur.fetchall()
+    # [<sqlite3.Row object at 0x0000024BCB88C8B0>, <sqlite3.Row object at 0x0000024BCB88CC10>, <sqlite3.Row object at 0x0000024BCB88CA60>]
+    
+    
+    print(log_results)
+
+    return render_template('day.html', date=pretty_date, food_results=food_results, log_results=log_results)
 
 
 @app.route('/food', methods=["GET", "POST"])
