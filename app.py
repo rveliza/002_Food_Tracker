@@ -29,12 +29,22 @@ def index():
         date = request.form['date'] # 2025-01-17 <class 'str'>
         dt = datetime.strptime(date, '%Y-%m-%d') # <class 'datetime.datetime'>
         database_date = datetime.strftime(dt, '%Y%m%d') # <class 'str'>
-        pretty_date = datetime.strftime(dt, '%B %d, %Y')
         
         db.execute("INSERT INTO log_date (entry_date) values (?)", [database_date])
         db.commit()
     
-    return render_template('home.html')
+    cur = db.execute('SELECT entry_date FROM log_date ORDER BY entry_date DESC')
+    results = cur.fetchall()
+    pretty_results = []
+
+    for i in results:
+        single_date = {}
+        d = datetime.strptime(str(i['entry_date']), '%Y%m%d')
+        single_date['entry_date'] = datetime.strftime(d, '%B %d, %Y') #{'entry_date': 'January 17, 2025'}
+        pretty_results.append(single_date)
+    
+    
+    return render_template('home.html', results=pretty_results)
 
 @app.route('/view')
 def view():
