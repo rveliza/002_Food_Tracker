@@ -31,6 +31,7 @@ def view():
 
 @app.route('/food', methods=["GET", "POST"])
 def food():
+    db = get_db()
     if request.method == "POST":
         name = request.form['food-name']
         protein = int(request.form['protein'])
@@ -39,12 +40,15 @@ def food():
         
         calories = protein * 4 + carbohydrates * 4 + fat * 9
         
-        db = get_db()
+        
         db.execute('INSERT INTO food (name, protein, carbohydrates, fat, calories) values (?, ?, ?, ?, ?)', [name, protein, carbohydrates, fat, calories])
         db.commit()
-        return ("Data added to database")
 
-    return render_template('add_food.html')
+
+    cur = db.execute('SELECT * FROM food')
+    results = cur.fetchall()
+    
+    return render_template('add_food.html', results=results)
 
 
 if __name__ == "__main__":
