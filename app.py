@@ -48,13 +48,15 @@ def index():
 
 @app.route('/view/<date>', methods=["GET", "POST"]) # date is going to be 20170520
 def view(date):
-    if request.method == "POST":
-        return f"<h1>The food item added is #{request.form['food-select']}</h1>"
-
     db = get_db()
-    cur = db.execute('SELECT entry_date FROM log_date WHERE entry_date = ?', [date])
-    result = cur.fetchone() # fetchone returns a dict instead of a list
-    d = datetime.strptime(str(result['entry_date']), "%Y%m%d")
+    cur = db.execute('SELECT id, entry_date FROM log_date WHERE entry_date = ?', [date])
+    date_result = cur.fetchone() # fetchone returns a dict instead of a list
+
+    if request.method == "POST":
+        db.execute('INSERT INTO food_date (food_id, log_date_id) values (?, ?)', [request.form['food-select'], date_result['id']])
+        db.commit()
+
+    d = datetime.strptime(str(date_result['entry_date']), "%Y%m%d")
     pretty_date = datetime.strftime(d, "%B %d, %Y") # January 17, 2025
 
     ### Get list of foods from DB
@@ -62,6 +64,7 @@ def view(date):
     food_results = food_cur.fetchall()
 
     return render_template('day.html', date=pretty_date, food_results=food_results)
+
 
 @app.route('/food', methods=["GET", "POST"])
 def food():
