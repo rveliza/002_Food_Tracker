@@ -1,4 +1,5 @@
 from flask import Flask, render_template, g, request
+from datetime import datetime
 import sqlite3
 
 app = Flask(__name__)
@@ -21,8 +22,18 @@ def close_db(error):
         g.sqlite_db.close()
 
 
-@app.route('/')
+@app.route('/',methods=["GET", "POST"])
 def index():
+    db = get_db()
+    if request.method == "POST":
+        date = request.form['date'] # 2025-01-17 <class 'str'>
+        dt = datetime.strptime(date, '%Y-%m-%d') # <class 'datetime.datetime'>
+        database_date = datetime.strftime(dt, '%Y%m%d') # <class 'str'>
+        pretty_date = datetime.strftime(dt, '%B %d, %Y')
+        
+        db.execute("INSERT INTO log_date (entry_date) values (?)", [database_date])
+        db.commit()
+    
     return render_template('home.html')
 
 @app.route('/view')
