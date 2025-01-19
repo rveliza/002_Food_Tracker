@@ -33,7 +33,16 @@ def index():
         db.execute("INSERT INTO log_date (entry_date) values (?)", [database_date])
         db.commit()
     
-    cur = db.execute('SELECT entry_date FROM log_date ORDER BY entry_date DESC')
+    cur = db.execute("""SELECT log_date.entry_date,
+                                sum(food.protein) as protein,
+                                sum(food.carbohydrates) as carbohydrates,
+                                sum(food.fat) as fat,
+                                sum(food.calories) as calories 
+                        FROM log_date 
+                        JOIN food_date ON food_date.log_date_id = log_date.id
+                        JOIN food ON food.id = food_date.food_id
+                        GROUP BY log_date.id
+                        ORDER BY log_date.entry_date DESC""")
     results = cur.fetchall()
     date_results = []
 
@@ -41,6 +50,10 @@ def index():
         single_date = {}
 
         single_date['entry_date'] = i['entry_date']
+        single_date['protein'] = i['protein']
+        single_date['carbohydrates'] = i['carbohydrates']
+        single_date['fat'] = i['fat']
+        single_date['calories'] = i['calories']
 
         d = datetime.strptime(str(i['entry_date']), '%Y%m%d')
         single_date['pretty_date'] = datetime.strftime(d, '%B %d, %Y') #{'entry_date': 'January 17, 2025'}
