@@ -75,10 +75,20 @@ def view(date):
     log_results = log_cur.fetchall()
     # [<sqlite3.Row object at 0x0000024BCB88C8B0>, <sqlite3.Row object at 0x0000024BCB88CC10>, <sqlite3.Row object at 0x0000024BCB88CA60>]
     
-    
-    print(log_results)
+    totals = {
+        'protein': 0,
+        'carbohydrates': 0,
+        'fat': 0,
+        'calories': 0
+    }
 
-    return render_template('day.html', date=pretty_date, food_results=food_results, log_results=log_results)
+    for food in log_results:
+        totals['protein'] += food['protein']
+        totals['carbohydrates'] += food['carbohydrates']
+        totals['fat'] += food['fat']
+        totals['calories'] += food['calories']
+
+    return render_template('day.html', date=pretty_date, food_results=food_results, log_results=log_results, totals=totals)
 
 
 @app.route('/food', methods=["GET", "POST"])
